@@ -1,3 +1,4 @@
+typedef long i32;
 typedef unsigned long u32;
 typedef unsigned long long u64;
 
