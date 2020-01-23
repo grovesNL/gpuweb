@@ -104,10 +104,10 @@ async function init() {
     const aspect = Math.abs(canvas.width / canvas.height);
     mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
 
-    const context = canvas.getContext('gpu');
+    const context = canvas.getContext('gpupresent');
 
     const swapChainDescriptor = { 
-        device: device, 
+        device, 
         format: "bgra8unorm"
     };
     swapChain = context.configureSwapChain(swapChainDescriptor);
@@ -135,8 +135,8 @@ async function init() {
         format: "float4"
     }
     const vertexBufferDescriptor = {
-        attributeSet: [positionAttributeDescriptor, colorAttributeDescriptor],
-        stride: vertexSize,
+        attributes: [positionAttributeDescriptor, colorAttributeDescriptor],
+        arrayStride: vertexSize,
         stepMode: "vertex"
     };
     const vertexInputDescriptor = { vertexBuffers: [vertexBufferDescriptor] };
@@ -144,7 +144,7 @@ async function init() {
     // Bind group binding layout
     const transformBufferBindGroupLayoutBinding = {
         binding: transformBindingNum, // id[[(0)]]
-        visibility: GPUShaderStageBit.VERTEX,
+        visibility: GPUShaderStage.VERTEX,
         type: "uniform-buffer"
     };
 
@@ -154,7 +154,8 @@ async function init() {
     // Pipeline
     const depthStateDescriptor = {
         depthWriteEnabled: true,
-        depthCompare: "less"
+        depthCompare: "less",
+        format: "depth24plus-stencil8"
     };
 
     const pipelineLayoutDescriptor = { bindGroupLayouts: [bindGroupLayout] };
@@ -179,18 +180,16 @@ async function init() {
             dstFactor: "one-minus-src-alpha",
             operation: "add"
         },
-        writeMask: GPUColorWriteBits.ALL
+        writeMask: GPUColorWrite.ALL
     };
     const pipelineDescriptor = {
         layout: pipelineLayout,
-
         vertexStage: vertexStageDescriptor,
         fragmentStage: fragmentStageDescriptor,
-
         primitiveTopology: "triangle-list",
         colorStates: [colorState],
         depthStencilState: depthStateDescriptor,
-        vertexInput: vertexInputDescriptor
+        vertexState: vertexInputDescriptor
     };
     pipeline = device.createRenderPipeline(pipelineDescriptor);
 
@@ -216,7 +215,7 @@ async function init() {
         mipLevelCount: 1,
         sampleCount: 1,
         dimension: "2d",
-        format: "depth32float-stencil8",
+        format: "depth24plus-stencil8",
         usage: GPUTextureUsage.OUTPUT_ATTACHMENT
     };
 
